@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>尚美医疗生产管理系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
+.header{background:linear-gradient(135deg,#1A3A5C,#2E6DA4);color:#fff;padding:40px 0;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.header h1{font-size:28px;margin-bottom:6px;letter-spacing:2px}
+.header p{font-size:14px;opacity:.85}
+.container{max-width:900px;margin:40px auto;padding:0 16px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:660px;margin:0 auto}
+.card{background:#fff;border-radius:14px;padding:36px 28px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:.2s;cursor:pointer;text-decoration:none;color:inherit;display:block}
+.card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.card .icon{font-size:52px;margin-bottom:16px;display:block}
+.card h2{font-size:20px;color:#1A3A5C;margin-bottom:10px}
+.card p{font-size:13px;color:#777;line-height:1.6}
+.card .badge{display:inline-block;margin-top:14px;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:600}
+.card .badge.blue{background:#e8f0fe;color:#1a73e8}
+.card .badge.green{background:#e8f5e9;color:#2e7d32}
+.card .badge.purple{background:#f3e8ff;color:#7c3aed}
+.card .badge.orange{background:#fff3e0;color:#e65100}
+.card .badge.teal{background:#e0f2f1;color:#00695c}
+.card.full{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:30px 40px}
+.card.full .card-left{display:flex;align-items:center;gap:20px}
+.card.full .icon{margin-bottom:0;font-size:48px}
+.card.full .card-text{text-align:left}
+.card.full .card-text h2{margin-bottom:6px}
+.card.full .card-text p{line-height:1.5}
+@media(max-width:640px){.cards{grid-template-columns:1fr;max-width:340px}.card.full{flex-direction:column;text-align:center;padding:28px 20px}.card.full .card-left{flex-direction:column;gap:12px}.card.full .card-text{text-align:center}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>尚美医疗生产管理系统</h1>
+  <p>生产报告 &amp; 设备记录 &amp; 生产排程 &amp; 订单核验</p>
+</div>
+<div class="container">
+<div class="cards">
+  <a class="card" href="reports/index.html">
+    <span class="icon">&#x1F4CA;</span>
+    <h2>生产报告</h2>
+    <p>净化车间周报 &amp; 月报<br>产量/工时/UPH/良率/排名</p>
+    <span class="badge blue">查看报告</span>
+  </a>
+  <a class="card" href="tools/index.html">
+    <span class="icon">&#x2699;&#xFE0F;</span>
+    <h2>设备记录生成</h2>
+    <p>上传排程表和模板<br>一键生成设备使用记录</p>
+    <span class="badge green">生成记录</span>
+  </a>
+  <a class="card" href="http://192.168.112.243:5098" target="_blank">
+    <span class="icon">&#x1F4C5;</span>
+    <h2>生产排程</h2>
+    <p>PPDO APS 排程系统<br>甘特图 · 库存检查 · 工期预测</p>
+    <span class="badge purple">进入排程</span>
+  </a>
+  <a class="card" href="http://192.168.112.243:5099" target="_blank">
+    <span class="icon">&#x1F4E6;</span>
+    <h2>订单库存核验</h2>
+    <p>批量录入订单<br>自动核验成品/中间品/原材料库存</p>
+    <span class="badge orange">核验库存</span>
+  </a>
+  <a class="card full" href="ledgers/index.html">
+    <div class="card-left">
+      <span class="icon">&#x1F4D6;</span>
+      <div class="card-text">
+        <h2>台账中心</h2>
+        <p>生产通知单 · 领料记录 · 计划单 · 巡检 · 仓库台账 · 物料检验 · 不良事件抽查</p>
+      </div>
+    </div>
+    <span class="badge teal">查看台账</span>
+  </a>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>不良事件清单与红牌抽查 - 尚美医疗</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
+.nav{
+  background:linear-gradient(135deg,#1A3A5C,#2E6DA4);color:#fff;height:50px;display:flex;
+  align-items:center;justify-content:center;position:relative;
+  padding:0 28px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.nav .brand{font-size:16px;font-weight:700;letter-spacing:1px}
+.nav-right{position:absolute;right:28px;display:flex;gap:8px;align-items:center}
+.nav-right a{
+  color:rgba(255,255,255,.85);padding:6px 14px;border-radius:5px;
+  font-size:13px;transition:.2s;text-decoration:none;
+}
+.nav-right a:hover{background:rgba(255,255,255,.15);color:#fff}
+.container{max-width:920px;margin:30px auto;padding:0 16px 40px}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:28px}
+.card{background:#fff;border-radius:14px;padding:28px 20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:.2s;cursor:pointer;border:3px solid transparent}
+.card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.card.active{border-color:#2E6DA4;box-shadow:0 4px 16px rgba(46,109,164,.2)}
+.card .icon{font-size:40px;margin-bottom:10px;display:block}
+.card h2{font-size:17px;color:#1A3A5C;margin-bottom:6px}
+.card p{font-size:12px;color:#888;line-height:1.5}
+.card .badge{display:inline-block;margin-top:10px;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.red{background:#fdecea;color:#c0392b}
+.badge.blue{background:#e8f0fe;color:#1a73e8}
+.badge.orange{background:#fff3e0;color:#e65100}
+
+.panel{background:#fff;border-radius:14px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:none}
+.panel.show{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.panel h3{font-size:16px;color:#1A3A5C;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #e8e8e8}
+.panel h4{font-size:14px;color:#1A3A5C;margin:18px 0 8px}
+
+table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+th{background:#1A3A5C;color:#fff;padding:8px 10px;text-align:left;font-weight:600;white-space:nowrap}
+td{padding:8px 10px;border:1px solid #e0e0e0;vertical-align:top}
+tr:nth-child(even) td{background:#f8f9fa}
+td.c{text-align:center;white-space:nowrap}
+
+.lv-A{background:#e74c3c;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-B{background:#e67e22;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-green{background:#27ae60;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-excellent{background:#27ae60;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-pass{background:#2E6DA4;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-warn{background:#e67e22;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+.lv-red{background:#e74c3c;color:#fff;font-weight:bold;padding:2px 10px;border-radius:4px;font-size:11px;display:inline-block}
+
+.ws-block{border:1px solid #e0e0e0;border-radius:8px;margin:12px 0;overflow:hidden}
+.ws-head{background:#eef2f7;padding:8px 14px;font-weight:600;color:#1A3A5C;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.ws-head .lv{font-size:11px}
+.ws-body{padding:12px 14px}
+.ws-body .item{padding:4px 0;font-size:13px;line-height:1.7}
+.ws-body .item b{color:#1A3A5C}
+.ws-body .tag{display:inline-block;padding:1px 8px;border-radius:3px;font-size:11px;margin-right:6px}
+.tag.urgent{background:#fdecea;color:#c0392b}
+.tag.fix{background:#fff3e0;color:#e65100}
+.tag.prevent{background:#e8f0fe;color:#1a73e8}
+.tag.self{background:#e8f5e9;color:#2e7d32}
+
+.check-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.check-row:last-child{border-bottom:none}
+.check-row .cb{width:22px;height:22px;border:2px solid #2E6DA4;border-radius:4px;flex-shrink:0;margin-top:1px}
+.check-row .ct{flex:1;font-size:13px;line-height:1.6}
+.check-row .ct b{color:#1A3A5C}
+.check-row .ct .sub{color:#888;font-size:12px;margin-top:2px}
+
+.rt-block{border:1px solid #d0d0d0;border-radius:8px;margin:10px 0;overflow:hidden}
+.rt-head{background:#1A3A5C;color:#fff;padding:8px 14px;font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.rt-body{padding:12px 14px}
+.rt-body .step{padding:5px 0;font-size:13px;line-height:1.7}
+.rt-body .step .num{display:inline-block;width:70px;font-weight:600;color:#1A3A5C}
+.rt-body .step .desc{color:#444}
+
+.note{background:#fffde7;border-left:4px solid #f1c40f;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:#666;margin:12px 0}
+.note b{color:#e67e22}
+
+@media(max-width:640px){.cards{grid-template-columns:1fr}.container{padding:20px 12px}}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <span class="brand">不良事件清单与红牌抽查</span>
+  <div class="nav-right">
+    <a href="index.html">&larr; 返回台账中心</a>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="cards">
+  <div class="card active" onclick="showPanel('p1')">
+    <span class="icon">📋</span>
+    <h2>汇总问题</h2>
+    <p>9项不良事件 · A/B/C分级<br>对照《生产过程问题分级表》</p>
+    <span class="badge red">8项A类 / 1项B类</span>
+  </div>
+  <div class="card" onclick="showPanel('p2')">
+    <span class="icon">🔧</span>
+    <h2>整改措施</h2>
+    <p>岗位自互检强化<br>紧急·纠正·预防三层对策</p>
+    <span class="badge blue">逐项对策</span>
+  </div>
+  <div class="card" onclick="showPanel('p3')">
+    <span class="icon">🃏</span>
+    <h2>红牌抽查方案</h2>
+    <p>现场抽查清单 + 植入缺陷红牌测试<br>红黄牌判定与处理</p>
+    <span class="badge orange">现场可用</span>
+  </div>
+</div>
+
+<!-- ========== 面板1：汇总问题 ========== -->
+<div class="panel show" id="p1">
+  <h3>问题分级标准（参照《生产过程问题分级与岗位自互检标准》）</h3>
+  <table>
+    <tr><th style="width:90px">级别</th><th style="width:240px">性质描述</th><th>具体示例</th></tr>
+    <tr>
+      <td class="c"><span class="lv-A">A类（关键）</span></td>
+      <td>导致产品主要功能失效，易引发客户退货或投诉</td>
+      <td>产品规格与工艺标准不符（包装/套管针/埋植线型号错误；倒刺线/套管针不达标；标签信息错误）<br>一/二级包装功能失效（漏封、破损）<br>包装内缺件、无产品或含明显异物</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-B">B类（中度）</span></td>
+      <td>产品功能正常，但存在引起客户不满意的质量问题</td>
+      <td>一级包装内含轻微异物 · 套管针/海绵明显脏污划痕 · 包装来料外观印刷错误 · 产品物料外观不一致</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-C">C类（轻微）</span></td>
+      <td>客户难以察觉，或仅在生产中发现的微小偏差</td>
+      <td>二/三/四级包装外观不良（轻微脏污、划痕、封口贴松动）· 套管针轻微划痕</td>
+    </tr>
+  </table>
+
+  <h4>9项不良事件分级清单</h4>
+  <table>
+    <tr>
+      <th style="width:28px">#</th>
+      <th>不良事件</th>
+      <th style="width:70px">工序/岗位</th>
+      <th style="width:70px">分级</th>
+      <th>对应分级依据</th>
+    </tr>
+    <tr>
+      <td class="c">1</td><td>铝箔袋/纸盒漏贴品牌圆标签</td><td class="c">装铝箔袋<br>装纸盒</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>标签信息错误 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">2</td><td>空铝箔袋（未装纸塑袋即封口）</td><td class="c">装铝箔袋<br>铝箔袋封口</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>包装内无产品 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">3</td><td>纸盒无铝箔袋仅说明书（胶松）</td><td class="c">装纸盒</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>包装内缺件、无产品 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">4</td><td>纸盒多放/少放铝箔袋</td><td class="c">装纸盒</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>包装规格与标准不符 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">5</td><td>纸盒漏放说明书</td><td class="c">装纸盒</td>
+      <td class="c"><span class="lv-B">B</span></td>
+      <td>包装缺件但非产品功能失效 → B类</td>
+    </tr>
+    <tr>
+      <td class="c">6</td><td>套管针空针（未组装无线）</td><td class="c">组装OP</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>产品规格与标准不符 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">7</td><td>纸塑袋内数量少针</td><td class="c">装袋OP<br>装袋桌长</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>包装内缺件 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">8</td><td>塞管脱落</td><td class="c">组装OP<br>装袋OP</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>产品规格与标准不符 → A类</td>
+    </tr>
+    <tr>
+      <td class="c">9</td><td>无海绵</td><td class="c">组装OP</td>
+      <td class="c"><span class="lv-A">A</span></td>
+      <td>产品规格与标准不符 → A类</td>
+    </tr>
+  </table>
+  <div class="note"><b>结论：</b>9项不良中8项为A类（关键）、1项为B类（中度）。集中在<b>组装OP</b>（3项：⑥⑧⑨）和<b>包装岗位</b>（6项：①②③④⑤⑦）。</div>
+</div>
+
+<!-- ========== 面板2：整改措施 ========== -->
+<div class="panel" id="p2">
+  <h3>整改对策清单（对照岗位自互检标准）</h3>
+  <p style="font-size:12px;color:#888;margin-bottom:14px">每项措施在原有自互检要求基础上强化，分三层：<span class="tag self">自互检强化</span><span class="tag urgent">紧急</span><span class="tag fix">纠正</span><span class="tag prevent">预防</span></p>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>① 漏贴品牌圆标签</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span>装铝箔袋岗位确认铝箔袋品牌与标签一致；装纸盒岗位确认纸盒品牌与标签一致</div>
+      <div class="item"><span class="tag urgent">紧急</span>在库成品全检补贴标签</div>
+      <div class="item"><span class="tag fix">纠正</span>装袋/装盒工序增加"确认标签贴好"动作</div>
+      <div class="item"><span class="tag prevent">预防</span>控制标签领用数量（领用数=铝箔袋数/纸盒数）</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>② 空铝箔袋（未装纸塑袋即封口）</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>装铝箔袋岗位</b>确认铝箔袋内纸塑袋数量与工艺标准一致 → <b>铝箔袋封口岗位</b>确认铝箔袋内纸塑袋数量与工艺标准一致</div>
+      <div class="item"><span class="tag urgent">紧急</span>在库铝箔袋100%手感检查，可疑空袋拆开确认</div>
+      <div class="item"><span class="tag fix">纠正</span>增设"确认纸塑袋数量"动作</div>
+      <div class="item"><span class="tag prevent">预防</span>控制铝箔袋投料数（铝箔袋数=纸塑袋数×包装规格）</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>③ 纸盒无铝箔袋（双面胶松）</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>装纸盒岗位</b>确认纸盒内铝箔袋数量（附说明书）与工艺标准一致</div>
+      <div class="item"><span class="tag urgent">紧急</span>在库纸盒100%倒置检查，可疑盒拆开确认</div>
+      <div class="item"><span class="tag fix">纠正</span>更换粘力更强的双面胶或增至2条；装盒后逐只倒置3秒检查；出库前纸盒重量抽检</div>
+      <div class="item"><span class="tag prevent">预防</span>双面胶来料每批做粘性测试（24h拉力≥2N）</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>④ 多放/少放铝箔袋</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>装纸盒岗位</b>确认纸盒内铝箔袋数量与工艺标准一致</div>
+      <div class="item"><span class="tag urgent">紧急</span>装盒工位张贴包装规格速查表</div>
+      <div class="item"><span class="tag fix">纠正</span>装盒前核对型号→查表→确认包数；装盒后逐盒清点</div>
+      <div class="item"><span class="tag prevent">预防</span>每月装盒人员规格培训+考核</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>⑤ 漏放说明书</span><span class="lv-B">B类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>装纸盒岗位</b>确认纸盒内铝箔袋数量（<b>附说明书</b>）与工艺标准一致</div>
+      <div class="item"><span class="tag urgent">紧急</span>在库纸盒检查</div>
+      <div class="item"><span class="tag fix">纠正</span>明确操作固定顺序：先放说明书→再放铝箔袋→封盒；封盒前目视确认</div>
+      <div class="item"><span class="tag prevent">预防</span>说明书领用台账（领用数=纸盒数），剩余回收</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>⑥ 套管针空针（未组装）</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>组装OP</b>确认按照工艺标准组装 → <b>组装桌长</b>确认组装中间品按照工艺标准组装</div>
+      <div class="item"><span class="tag urgent">紧急</span>组装中间品100%检查</div>
+      <div class="item"><span class="tag fix">纠正</span>明确组装、装袋工序自互检标准</div>
+      <div class="item"><span class="tag prevent">预防</span>不定期红牌测试强化自互检意识</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>⑦ 纸塑袋少针</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>装袋OP</b>确认装袋数量正确 → <b>装袋桌长</b>确认纸塑袋内套管针数量正确 → <b>纸塑袋封口</b>确认纸塑袋内套管针数量正确</div>
+      <div class="item"><span class="tag fix">纠正</span>装袋后逐袋数支数，封口前两人确认</div>
+      <div class="item"><span class="tag prevent">预防</span>换型号时领班与桌长口头确认"此型号每袋X支"</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>⑧ 塞管脱落</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>组装OP</b>确认塞管无尺寸不良 → <b>装袋OP</b>确认组装中间品外观正常（半钝针额外检查塞管的松紧）→ <b>装袋桌长</b>半钝针额外检查塞管的松紧 → <b>送灭菌/装抽湿框/装铝箔袋</b>各岗位均"半钝针额外检查塞管的松紧"</div>
+      <div class="item"><span class="tag urgent">紧急</span>组装中间品100%检查</div>
+      <div class="item"><span class="tag fix">纠正</span>组装后轻拉塞管（~1-2N）确认不脱落；全流程轻拿轻放禁抛掷</div>
+      <div class="item"><span class="tag prevent">预防</span>不定期红牌测试强化自互检意识</div>
+    </div>
+  </div>
+
+  <div class="ws-block">
+    <div class="ws-head"><span>⑨ 无海绵</span><span class="lv-A">A类</span></div>
+    <div class="ws-body">
+      <div class="item"><span class="tag self">自互检</span><b>组装OP</b>确认套管针/海绵/塞管/固定环无划痕、异物、尺寸不良 → <b>组装桌长</b>确认套管针/海绵/塞管/固定环无质量问题</div>
+      <div class="item"><span class="tag urgent">紧急</span>组装中间品100%检查</div>
+      <div class="item"><span class="tag fix">纠正</span>SOP固定顺序：放线→放海绵→确认海绵在位→放护套；组装后针座端目视/触感确认；装袋、纸塑袋封口工序确认</div>
+      <div class="item"><span class="tag prevent">预防</span>不定期红牌测试强化自互检意识</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 面板3：红牌抽查方案 ========== -->
+<div class="panel" id="p3">
+  <h3>红牌抽查方案</h3>
+  <div class="note"><b>抽查总则：</b>每周至少1次不定期不预告抽查 · 每次覆盖≥2个岗位 · 不通知操作人员 · 随机抽样不挑批次</div>
+
+  <h4>净化车间 · 组装OP岗位</h4>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认套管针/海绵/塞管/固定环无划痕、异物、尺寸不良</b><div class="sub">防⑥⑧⑨ · 对照自互检要求第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认按照工艺标准组装（针管内有线）</b><div class="sub">防⑥空针 · f=L看线尾外露 · f=W看塞管封住线尾 · 平滑线看海绵在位</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认切刺中间品规格与生产任务型号匹配</b><div class="sub">防⑥型号错误 · 对照自互检要求第3条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>半钝针额外检查塞管/固定环的松紧</b><div class="sub">防⑧塞管脱落 · 参照自互检标准中多处"半钝针额外检查塞管的松紧"</div></div></div>
+
+  <h4>净化车间 · 装袋OP / 装袋桌长 / 纸塑袋封口</h4>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋质量与规格正常</b><div class="sub">防⑦ · 装袋OP自互检第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认装袋数量正确</b><div class="sub">防⑦少针 · g=A/a/La=5支 · g=C/c/D/d=2支 · 装袋OP自互检第2条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认组装中间品外观正常（半钝针额外检查塞管松紧）</b><div class="sub">防⑧ · 装袋OP自互检第3条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋内无杂质、灰尘</b><div class="sub">装袋桌长自互检第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋内套管针数量正确（半钝针额外检查塞管松紧）</b><div class="sub">防⑦⑧ · 装袋桌长自互检第2条 · 拆袋清点支数+轻拉塞管</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋（品牌）、套管针型号尺寸与标签一致</b><div class="sub">防①标签错误 · 装袋桌长自互检第3条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>纸塑袋封口前确认数量正确（半钝针额外检查塞管松紧）</b><div class="sub">防⑦⑧ · 纸塑袋封口自互检第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋按工艺标准封口、外观整洁无变形</b><div class="sub">纸塑袋封口自互检第2-3条</div></div></div>
+
+  <h4>中包装车间 · 装铝箔袋 / 铝箔袋封口</h4>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸塑袋外观整洁无变形、封口/袋内无杂质</b><div class="sub">装铝箔袋自互检第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认铝箔袋型号规格与生产任务型号匹配</b><div class="sub">防①品牌错误 · 装铝箔袋自互检第2条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认铝箔袋内纸塑袋数量与工艺标准一致</b><div class="sub">防②空袋 · 装铝箔袋自互检第3条 + 铝箔袋封口自互检第1条 · 手压确认内有扁平硬物</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>半钝针额外检查塞管的松紧</b><div class="sub">防⑧ · 装铝箔袋自互检第4条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认铝箔袋封口正常、外观正常、封口数量与任务匹配</b><div class="sub">铝箔袋封口自互检第2-3条</div></div></div>
+
+  <h4>中包装车间 · 装纸盒 / 装纸箱</h4>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸盒外观整洁无变形</b><div class="sub">装纸盒自互检第1条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸盒规格型号与生产任务型号匹配</b><div class="sub">防①④ · 装纸盒自互检第2条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸盒内铝箔袋数量（附说明书）与工艺标准一致</b><div class="sub">防③④⑤ · 装纸盒自互检第3条 · 缇致小线4包 · C系列4-5包 · 沁络雅/纳美塑8包</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>纸盒倒置3秒检查铝箔袋不脱落</b><div class="sub">防③双面胶松 · 红牌抽查追加项</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸箱外观整洁无变形、规格型号匹配</b><div class="sub">防① · 装纸箱自互检第1-2条</div></div></div>
+  <div class="check-row"><div class="cb"></div><div class="ct"><b>确认纸箱内纸盒数量与工艺标准一致</b><div class="sub">装纸箱自互检第3条</div></div></div>
+
+  <!-- ===== 植入缺陷红牌测试 ===== -->
+  <h3 style="margin-top:24px">植入缺陷红牌测试（验证各工序自互检有效性）</h3>
+  <div class="note"><b>测试总则：</b>每月至少1次不定期不预告 · 植入缺陷品做好隐蔽标记便于追溯 · 植入后不干预 · 观察各工序是否发现并拦截 · 记录发现工序+方式+时间</div>
+
+  <table>
+    <tr>
+      <th style="width:50px">编号</th>
+      <th style="width:130px">植入缺陷</th>
+      <th style="width:40px">对应<br>不良</th>
+      <th style="width:140px">植入位置</th>
+      <th>预期拦截工序（按流程顺序）</th>
+      <th>各工序检查要点</th>
+      <th style="width:60px">频次</th>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-1</b></td>
+      <td>空针（套管针无埋植线）</td>
+      <td class="c">⑥</td>
+      <td>组装完成后混入正常中间品</td>
+      <td>①组装OP自检 → ②组装桌长互检 → ③装袋OP → ④装袋桌长 → ⑤纸塑袋封口</td>
+      <td>f=L→线尾外露不可见；f=W→塞管在位但无线尾；平滑线→海绵在位但无线</td>
+      <td class="c">每月1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-2</b></td>
+      <td>无海绵</td>
+      <td class="c">⑨</td>
+      <td>组装完成后混入</td>
+      <td>①组装OP自检 → ②组装桌长互检 → ③装袋OP</td>
+      <td>针座端目视/触感确认海绵在位</td>
+      <td class="c">每月1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-3</b></td>
+      <td>塞管松动（可徒手拔出）</td>
+      <td class="c">⑧</td>
+      <td>组装完成后混入</td>
+      <td>①组装OP → ②装袋OP → ③装袋桌长 → ④铝箔袋封口</td>
+      <td>轻拉塞管（~1-2N）即脱落</td>
+      <td class="c">每月1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-4</b></td>
+      <td>纸塑袋少放1支针</td>
+      <td class="c">⑦</td>
+      <td>装袋后混入</td>
+      <td>①装袋桌长 → ②纸塑袋封口 → ③装铝箔袋</td>
+      <td>拆袋清点支数不足（g=A/a/La=5支；g=C/c/D/d=2支）</td>
+      <td class="c">每月1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-5</b></td>
+      <td>空铝箔袋（无纸塑袋）</td>
+      <td class="c">②</td>
+      <td>装铝箔袋后混入</td>
+      <td>①铝箔袋封口 → ②装纸盒</td>
+      <td>手压铝箔袋无扁平硬物；有条件称重（空袋~3g vs 正常~15-25g）</td>
+      <td class="c">每月1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-6</b></td>
+      <td>纸盒无说明书</td>
+      <td class="c">⑤</td>
+      <td>装纸盒后混入</td>
+      <td>①装纸盒自检 → ②装纸箱</td>
+      <td>开盒目视确认说明书在位</td>
+      <td class="c">每季度1次</td>
+    </tr>
+    <tr>
+      <td class="c"><b>RT-7</b></td>
+      <td>漏贴品牌圆标签</td>
+      <td class="c">①</td>
+      <td>装铝箔袋/装纸盒后混入</td>
+      <td>①装纸盒 → ②装纸箱</td>
+      <td>目视品牌标签缺失</td>
+      <td class="c">每季度1次</td>
+    </tr>
+  </table>
+
+  <!-- RT-1 详细操作 -->
+  <div class="rt-block">
+    <div class="rt-head"><span>RT-1 空针红牌测试详细操作（示例）</span><span style="font-size:11px;opacity:.8">对应不良⑥</span></div>
+    <div class="rt-body">
+      <div class="step"><span class="num">步骤1·准备</span><span class="desc">取1支未装线的套管针（空针），做好隐蔽标记（如针座底部刻字），不影响外观目视</span></div>
+      <div class="step"><span class="num">步骤2·植入</span><span class="desc">在组装OP完成正常组装后，将空针混入下一批中间品中（<b>不通知任何人</b>）</span></div>
+      <div class="step"><span class="num">步骤3·观察</span><span class="desc">记录每个工序是否发现该缺陷：组装OP自检 → 组装桌长互检 → 装袋OP → 装袋桌长 → 纸塑袋封口</span></div>
+      <div class="step"><span class="num">步骤4·拦截</span><span class="desc">任一工序发现即拦截，记录发现工序、发现方式、拦截时间</span></div>
+      <div class="step"><span class="num">步骤5·追溯</span><span class="desc">未发现时追溯至最终环节（装纸盒/装纸箱），记录缺陷品流向</span></div>
+    </div>
+  </div>
+
+  <!-- RT-3 详细操作 -->
+  <div class="rt-block">
+    <div class="rt-head"><span>RT-3 塞管松动红牌测试详细操作</span><span style="font-size:11px;opacity:.8">对应不良⑧</span></div>
+    <div class="rt-body">
+      <div class="step"><span class="num">步骤1·准备</span><span class="desc">取1支已组装的半钝针（f=W），将塞管轻轻拔松（徒手可拔出但不掉落），做好隐蔽标记</span></div>
+      <div class="step"><span class="num">步骤2·植入</span><span class="desc">组装完成后混入正常中间品（不通知任何人）</span></div>
+      <div class="step"><span class="num">步骤3·观察</span><span class="desc">组装OP → 装袋OP → 装袋桌长 → 铝箔袋封口，各岗位"半钝针额外检查塞管的松紧"是否执行</span></div>
+      <div class="step"><span class="num">步骤4·拦截</span><span class="desc">轻拉塞管即脱落 = 发现拦截；未拉 = 未发现</span></div>
+    </div>
+  </div>
+
+  <!-- RT-5 详细操作 -->
+  <div class="rt-block">
+    <div class="rt-head"><span>RT-5 空铝箔袋红牌测试详细操作</span><span style="font-size:11px;opacity:.8">对应不良②</span></div>
+    <div class="rt-body">
+      <div class="step"><span class="num">步骤1·准备</span><span class="desc">取1只空铝箔袋（不装纸塑袋），封口后外观与正常品一致，做好隐蔽标记</span></div>
+      <div class="step"><span class="num">步骤2·植入</span><span class="desc">装铝箔袋后混入正常品中（不通知任何人）</span></div>
+      <div class="step"><span class="num">步骤3·观察</span><span class="desc">铝箔袋封口岗位是否手压确认内容物 → 装纸盒岗位是否开盒清点</span></div>
+      <div class="step"><span class="num">步骤4·拦截</span><span class="desc">手压无扁平硬物 = 发现拦截；未压/未发现 = 未拦截</span></div>
+    </div>
+  </div>
+
+  <h4>红牌测试判定标准</h4>
+  <table>
+    <tr><th style="width:80px">判定</th><th>条件</th><th>处理</th></tr>
+    <tr>
+      <td class="c"><span class="lv-excellent">优秀</span></td>
+      <td>在第一道工序（组装OP自检或组装桌长互检）发现</td>
+      <td>自互检有效，记录表扬</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-pass">合格</span></td>
+      <td>在第二道工序（装袋OP或装袋桌长）发现</td>
+      <td>下游拦截有效，上游需加强</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-warn">警告</span></td>
+      <td>在第三道及以后工序（纸塑袋封口/装铝箔袋）发现</td>
+      <td>上游自互检失效，该工序段需整改</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-red">红牌</span></td>
+      <td>缺陷品未被发现，流出至装纸盒/装纸箱</td>
+      <td>停线 · 全线自互检复训 · 连续3次优秀恢复</td>
+    </tr>
+  </table>
+
+  <h4>红黄牌判定（日常抽查）</h4>
+  <table>
+    <tr><th style="width:70px">牌级</th><th>判定条件</th><th>处理</th></tr>
+    <tr>
+      <td class="c"><span class="lv-red">红牌</span></td>
+      <td>发现1件A类不良</td>
+      <td>停线 · 同批全检 · 8D报告48h · 全员复训 · 连续3次绿牌恢复</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-warn">黄牌</span></td>
+      <td>发现1件B类不良或≥2件C类</td>
+      <td>标记记录 · 扩大抽检至20件 · 5工作日纠正报告 · 下次验证</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="lv-green">绿牌</span></td>
+      <td>无不良</td>
+      <td>合格 · 正常流转</td>
+    </tr>
+  </table>
+</div>
+
+</div>
+
+<script>
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  document.getElementById(id).classList.add('show');
+  event.currentTarget.classList.add('active');
+}
+</script>
+
+</body>
+</html>

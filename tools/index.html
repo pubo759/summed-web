@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生产设备使用记录生成</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
+.nav{
+  background:linear-gradient(135deg,#1A3A5C,#2E6DA4);color:#fff;height:50px;display:flex;
+  align-items:center;justify-content:center;position:relative;
+  padding:0 28px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.nav .brand{font-size:16px;font-weight:700;letter-spacing:1px}
+.nav-right{position:absolute;right:28px;display:flex;gap:8px;align-items:center}
+.nav-right a{
+  color:rgba(255,255,255,.85);padding:6px 14px;border-radius:5px;
+  font-size:13px;transition:.2s;text-decoration:none;
+}
+.nav-right a:hover{background:rgba(255,255,255,.15);color:#fff}
+.container{max-width:900px;margin:40px auto;padding:0 16px}
+.card{background:#fff;border-radius:14px;padding:36px 28px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.card h2{font-size:16px;margin-bottom:16px;color:#1A3A5C;border-bottom:2px solid #e8f0fe;padding-bottom:8px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.col{flex:1;min-width:240px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;color:#555;margin-bottom:4px;font-weight:500}
+.form-group input,.form-group select{width:100%;padding:10px 12px;border:1.5px solid #d0d7de;border-radius:8px;font-size:14px;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+.file-zone{border:2px dashed #b0bec5;border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:#fafbfc}
+.file-zone:hover{border-color:#1a73e8;background:#e8f0fe}
+.file-zone.dragover{border-color:#1a73e8;background:#dceeff;box-shadow:0 0 0 4px rgba(26,115,232,.15)}
+.file-zone.loaded{border-style:solid;border-color:#4caf50;background:#f1f8e9}
+.file-zone .icon{font-size:36px;margin-bottom:8px}
+.file-zone .name{font-size:13px;color:#333;margin-top:4px;word-break:break-all}
+.btn{display:inline-block;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-primary:disabled{background:#90caf9;cursor:not-allowed}
+.btn-success{background:#4caf50;color:#fff}
+.btn-success:hover{background:#388e3c}
+.btn-outline{background:#fff;color:#1a73e8;border:1.5px solid #1a73e8}
+.btn-outline:hover{background:#e8f0fe}
+.actions{text-align:center;margin-top:8px}
+.result-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.result-table th{background:#e8f0fe;color:#1A3A5C;padding:10px 8px;text-align:left;font-weight:600;border-bottom:2px solid #1A3A5C}
+.result-table td{padding:8px;border-bottom:1px solid #eee}
+.result-table tr:hover{background:#f8f9fa}
+.status-bar{padding:12px 16px;border-radius:8px;margin-top:12px;font-size:13px;display:none}
+.status-bar.show{display:block}
+.status-bar.success{background:#e8f5e9;color:#2e7d32}
+.status-bar.error{background:#fce4ec;color:#c62828}
+.status-bar.warn{background:#fff3e0;color:#e65100}
+.progress{display:none;text-align:center;padding:20px}
+.progress.show{display:block}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid #e0e0e0;border-top:3px solid #1a73e8;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dl-btn{margin-left:8px}
+.db-status{font-size:12px;opacity:.8;margin-top:4px}
+.db-status.error{color:#ffcdd2}
+@media(max-width:768px){.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="brand">生产设备使用记录生成</span>
+  <div class="nav-right">
+    <a href="../index.html">&#x1F3E0; 首页</a>
+  </div>
+</div>
+<div class="db-status" id="dbStatus" style="text-align:center;padding:6px;font-size:12px;color:#1A3A5C;background:#e8f0fe">正在加载批号库...</div>
+<div class="container">
+<div class="container">
+
+<div class="card">
+  <h2>步骤1：上传文件</h2>
+  <div class="row">
+    <div class="col">
+      <div class="form-group"><label>手套箱抽湿排程表 (.xlsx)</label></div>
+      <div class="file-zone" id="scheduleZone" onclick="document.getElementById('scheduleFile').click()">
+        <div class="icon">&#x1F4CA;</div>
+        <div>点击选择排程表</div>
+        <div class="name" id="scheduleName" style="display:none"></div>
+      </div>
+      <input type="file" id="scheduleFile" accept=".xlsx,.xls" style="display:none" onchange="handleFile('schedule',this)">
+    </div>
+    <div class="col">
+      <div class="form-group"><label>生产设备使用记录模板 (.docx)</label></div>
+      <div class="file-zone" id="templateZone" onclick="document.getElementById('templateFile').click()">
+        <div class="icon">&#x1F4C4;</div>
+        <div>点击选择模板</div>
+        <div class="name" id="templateName" style="display:none"></div>
+      </div>
+      <input type="file" id="templateFile" accept=".docx" style="display:none" onchange="handleFile('template',this)">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>步骤2：选择年月</h2>
+  <div class="row">
+    <div class="col" style="min-width:140px">
+      <div class="form-group"><label>年份</label>
+        <select id="yearSelect"><option value="2025">2025</option><option value="2026" selected>2026</option></select>
+      </div>
+    </div>
+    <div class="col" style="min-width:140px">
+      <div class="form-group"><label>月份</label>
+        <select id="monthSelect"><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select>
+      </div>
+    </div>
+    <div class="col" style="display:flex;align-items:flex-end;padding-bottom:14px">
+      <button class="btn btn-primary" id="genBtn" onclick="generate()" disabled>开始生成</button>
+    </div>
+  </div>
+</div>
+
+<div id="progressSection" class="progress">
+  <div class="spinner"></div>
+  <div style="margin-top:8px;color:#666">正在解析排程...</div>
+</div>
+
+<div id="resultSection" style="display:none">
+  <div class="card">
+    <h2>预览 &amp; 下载</h2>
+    <div id="previewContent"></div>
+    <div class="status-bar" id="statusBar"></div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn btn-success" id="downloadBtn" onclick="downloadAll()" disabled>打包下载全部 (ZIP)</button>
+      <span id="downloadLinks" style="margin-left:8px"></span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const DEVICES=['SC-010','SC-039','SC-049'];
+const DEVICE_ROWS={'SC-010':[2,4,6],'SC-039':[8,10,12],'SC-049':[14,16,18]};
+
+let BATCH_DB={}, DB_INFO={};
+let state={schedule:null,template:null};
+let genResult=null;
+
+// Load batch database from server
+(async function init(){
+  try{
+    const r=await fetch('batch.json?'+Date.now());
+    const j=await r.json();
+    BATCH_DB=j.data;
+    DB_INFO=j;
+    document.getElementById('dbStatus').textContent='批号库已加载 · '+j.count+'条 · '+j.updated;
+    document.getElementById('dbStatus').className='db-status';
+  }catch(e){
+    document.getElementById('dbStatus').textContent='批号库加载失败: '+e.message;
+    document.getElementById('dbStatus').className='db-status error';
+  }
+})();
+
+function handleFile(type,input){
+  const f=input.files[0];
+  if(!f) return;
+  const zone=document.getElementById(type+'Zone');
+  const nameDiv=document.getElementById(type+'Name');
+  const reader=new FileReader();
+  reader.onload=function(e){
+    state[type]=new Uint8Array(e.target.result);
+    zone.classList.add('loaded');
+    nameDiv.style.display='block';
+    nameDiv.textContent=f.name;
+    checkReady();
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function checkReady(){
+  document.getElementById('genBtn').disabled=!(state.schedule&&state.template);
+}
+
+// Drag-and-drop setup
+(function setupDragDrop(){
+  ['schedule','template'].forEach(type=>{
+    const zone=document.getElementById(type+'Zone');
+    const input=document.getElementById(type+'File');
+    ['dragenter','dragover','dragleave','drop'].forEach(evt=>{
+      zone.addEventListener(evt,function(e){ e.preventDefault(); e.stopPropagation(); });
+    });
+    zone.addEventListener('dragenter',()=>zone.classList.add('dragover'));
+    zone.addEventListener('dragover',()=>zone.classList.add('dragover'));
+    zone.addEventListener('dragleave',(e)=>{ if(!zone.contains(e.relatedTarget)) zone.classList.remove('dragover'); });
+    zone.addEventListener('drop',function(e){
+      zone.classList.remove('dragover');
+      const files=e.dataTransfer.files;
+      if(!files.length) return;
+      const f=files[0];
+      const ext=f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+      const valid=type==='schedule'?['.xlsx','.xls']:['.docx'];
+      if(!valid.includes(ext)){ alert('文件格式不正确，需要 '+valid.join(' 或 ')+' 格式'); return; }
+      const dt=new DataTransfer(); dt.items.add(f); input.files=dt.files;
+      handleFile(type,input);
+    });
+  });
+})();
+
+function serialToDate(s){
+  const d=new Date(1899,11,30); d.setDate(d.getDate()+parseInt(s)); return d;
+}
+function fmtDate(d){
+  return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+}
+
+function parseSchedule(wb,year,month){
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');
+  const dateCols=[];
+  for(let c=0;c<=range.e.c;c++){
+    const addr=XLSX.utils.encode_cell({r:0,c:c});
+    const v=ws[addr]?ws[addr].v:null;
+    if(typeof v==='number'&&v>40000&&v<50000){
+      const dt=serialToDate(v);
+      if(dt.getFullYear()===year&&dt.getMonth()+1===month) dateCols.push({col:c,dt:dt});
+    }
+  }
+  const daily={};
+  for(let i=0;i<dateCols.length;i++){
+    const {col,dt}=dateCols[i];
+    const ds=fmtDate(dt);
+    let hasNextDate=false;
+    if(i+1<dateCols.length) hasNextDate=(dateCols[i+1].col===col+1);
+    if(!hasNextDate){
+      const na=XLSX.utils.encode_cell({r:0,c:col+1});
+      if(ws[na]&&ws[na].v!=null) hasNextDate=true;
+    }
+    const readCols=hasNextDate?[col]:[col,col+1];
+    const devData={}; for(const d of DEVICES) devData[d]=[];
+    for(const rc of readCols){
+      for(const dev of DEVICES){
+        for(const br of DEVICE_ROWS[dev]){
+          const addr=XLSX.utils.encode_cell({r:br-1,c:rc});
+          const val=ws[addr]?String(ws[addr].v||'').trim():'';
+          if(val&&val!=='None'){
+            for(const bn of val.split('+')){
+              const b=bn.trim(); if(b) devData[dev].push(b);
+            }
+          }
+        }
+      }
+    }
+    for(const d of DEVICES) devData[d]=[...new Set(devData[d])];
+    if(Object.values(devData).some(a=>a.length>0)) daily[ds]=devData;
+  }
+  return daily;
+}
+
+function mapModels(daily){
+  const deviceDaily={};
+  const unmapped=new Set();
+  for(const ds of Object.keys(daily).sort()){
+    for(const dev of DEVICES){
+      const batches=daily[ds][dev];
+      if(!batches.length) continue;
+      const models=[];
+      for(const bn of batches){
+        if(BATCH_DB[bn]) models.push(BATCH_DB[bn].slice(0,10));
+        else{ unmapped.add(bn); models.push(bn); }
+      }
+      const uniq=[...new Set(models)];
+      if(!deviceDaily[dev]) deviceDaily[dev]=[];
+      deviceDaily[dev].push([ds,uniq.join(' ')]);
+    }
+  }
+  return {deviceDaily,unmapped};
+}
+
+async function generate(){
+  if(!state.schedule||!state.template) return;
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('progressSection').classList.add('show');
+  document.getElementById('resultSection').style.display='none';
+  const year=parseInt(document.getElementById('yearSelect').value);
+  const month=parseInt(document.getElementById('monthSelect').value);
+  await new Promise(r=>setTimeout(r,50));
+  try{
+    const wb=XLSX.read(state.schedule,{type:'array'});
+    const daily=parseSchedule(wb,year,month);
+    const {deviceDaily,unmapped}=mapModels(daily);
+    genResult={deviceDaily,unmapped,year,month};
+    showPreview(genResult);
+  }catch(e){ alert('解析失败: '+e.message); }
+  document.getElementById('progressSection').classList.remove('show');
+  document.getElementById('genBtn').disabled=false;
+}
+
+function showPreview(r){
+  document.getElementById('resultSection').style.display='block';
+  let html='',td=0,tv=0;
+  for(const dev of DEVICES){
+    const dd=r.deviceDaily[dev];
+    if(!dd||!dd.length) continue;
+    tv++; td+=dd.length;
+    html+='<h3 style="margin-top:16px;color:#1A3A5C;font-size:15px">'+dev+' ('+dd.length+'天)</h3>';
+    html+='<table class="result-table"><thead><tr><th style="width:45%">日期</th><th>型号</th></tr></thead><tbody>';
+    for(const [ds,ms] of dd) html+='<tr><td>'+ds+'</td><td>'+ms+'</td></tr>';
+    html+='</tbody></table>';
+  }
+  if(!tv) html='<p style="color:#999;text-align:center;padding:20px">该月无排程数据</p>';
+  document.getElementById('previewContent').innerHTML=html;
+  const bar=document.getElementById('statusBar');
+  if(r.unmapped.size>0){
+    bar.className='status-bar warn show';
+    bar.innerHTML='&#x26A0;&#xFE0F; '+r.unmapped.size+' 个批号未命中: '+[...r.unmapped].join(', ');
+  }else{
+    bar.className='status-bar success show';
+    bar.innerHTML='&#x2705; 全部命中 &middot; '+tv+'台设备 &middot; '+td+'天排程 &middot; '+r.year+'年'+r.month+'月';
+  }
+  document.getElementById('downloadBtn').disabled=false;
+  document.getElementById('downloadLinks').innerHTML='';
+}
+
+function clearCellText(cell){
+  if(!cell) return;
+  const paras=cell.getElementsByTagName('w:p');
+  for(const p of paras){
+    const runs=p.getElementsByTagName('w:r');
+    while(runs.length) p.removeChild(runs[0]);
+  }
+}
+
+function setCellText(cell,text){
+  if(!cell) return;
+  const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  const paras=cell.getElementsByTagName('w:p');
+  if(!paras.length) return;
+  const p=paras[0];
+  const existingRuns=p.getElementsByTagName('w:r');
+  while(existingRuns.length) p.removeChild(existingRuns[0]);
+  const r=cell.ownerDocument.createElementNS(ns,'w:r');
+  const t=cell.ownerDocument.createElementNS(ns,'w:t');
+  t.setAttribute('xml:space','preserve');
+  t.textContent=text;
+  r.appendChild(t);
+  p.appendChild(r);
+}
+
+async function generateDocx(devId,dailyData,year,month){
+  const zip=await JSZip.loadAsync(state.template);
+  let docXml=await zip.file('word/document.xml').async('text');
+  docXml=docXml.replace(/(<w:t[^>]*>)SC-\d{3}(<\/w:t>)/g,'$1'+devId+'$2');
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(docXml,'text/xml');
+  const tbls=doc.getElementsByTagName('w:tbl');
+  if(!tbls.length) throw new Error('No table found');
+  const tbl=tbls[0];
+  const rows=tbl.getElementsByTagName('w:tr');
+  for(let ri=2;ri<Math.min(15,rows.length);ri++){
+    const cells=rows[ri].getElementsByTagName('w:tc');
+    clearCellText(cells[0]); clearCellText(cells[3]);
+  }
+  const pageSize=13;
+  const pages=[];
+  for(let i=0;i<dailyData.length;i+=pageSize) pages.push(dailyData.slice(i,i+pageSize));
+  for(let pg=0;pg<pages.length;pg++){
+    const pgData=pages[pg];
+    if(pg===0){
+      for(let i=0;i<pgData.length;i++){
+        const [ds,ms]=pgData[i]; const ri=2+i;
+        if(ri>=rows.length) break;
+        const cells=rows[ri].getElementsByTagName('w:tc');
+        setCellText(cells[0],ds); setCellText(cells[3],ms);
+      }
+    }else{
+      const newTbl=tbl.cloneNode(true);
+      const nrs=newTbl.getElementsByTagName('w:tr');
+      for(let ri=2;ri<Math.min(15,nrs.length);ri++){
+        const cells=nrs[ri].getElementsByTagName('w:tc');
+        clearCellText(cells[0]); clearCellText(cells[3]);
+      }
+      for(let i=0;i<pgData.length;i++){
+        const [ds,ms]=pgData[i]; const ri=2+i;
+        if(ri>=nrs.length) break;
+        const cells=nrs[ri].getElementsByTagName('w:tc');
+        setCellText(cells[0],ds); setCellText(cells[3],ms);
+      }
+      const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+      const br=doc.createElementNS(ns,'w:br'); br.setAttribute('w:type','page');
+      const run=doc.createElementNS(ns,'w:r'); run.appendChild(br);
+      const para=doc.createElementNS(ns,'w:p');
+      const pPr=doc.createElementNS(ns,'w:pPr');
+      para.appendChild(pPr); para.appendChild(run);
+      tbl.parentNode.insertBefore(para,tbl);
+      tbl.parentNode.insertBefore(newTbl,tbl);
+    }
+  }
+  const ser=new XMLSerializer();
+  zip.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+ser.serializeToString(doc));
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+  return {blob,filename:'生产设备使用记录'+devId+' '+year+'.'+month+'.docx'};
+}
+
+async function downloadAll(){
+  if(!genResult) return;
+  const {deviceDaily,year,month}=genResult;
+  const btn=document.getElementById('downloadBtn');
+  btn.disabled=true; btn.textContent='生成中...';
+  const zip=new JSZip();
+  for(const dev of DEVICES){
+    const dd=deviceDaily[dev];
+    if(!dd||!dd.length) continue;
+    try{ const r=await generateDocx(dev,dd,year,month); zip.file(r.filename,r.blob); }
+    catch(e){ alert(dev+' 失败: '+e.message); }
+  }
+  const zb=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+  saveAs(zb,'生产设备使用记录_'+year+'年'+month+'月.zip');
+  btn.textContent='打包下载全部 (ZIP)'; btn.disabled=false;
+  let links='';
+  for(const dev of DEVICES){
+    const dd=deviceDaily[dev];
+    if(!dd||!dd.length) continue;
+    try{
+      const r=await generateDocx(dev,dd,year,month);
+      const url=URL.createObjectURL(r.blob);
+      links+='<a href="'+url+'" download="'+r.filename+'" class="btn btn-outline dl-btn">'+dev+'</a> ';
+    }catch(e){}
+  }
+  document.getElementById('downloadLinks').innerHTML=links;
+}
+</script>
+</body>
+</html>

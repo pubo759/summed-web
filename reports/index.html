@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>尚美医疗生产报告 · 仪表盘</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"微软雅黑","PingFang SC",sans-serif;background:#f0f4f8;color:#2a3543;font-size:13px;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+.nav{
+  background:linear-gradient(90deg,#0F2A45 0%,#1A3A5C 55%,#2E6DA4 100%);
+  color:#fff;height:54px;display:flex;align-items:center;padding:0 24px;
+  box-shadow:0 2px 10px rgba(15,42,69,.3);
+}
+.nav .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.nav .brand .dot{width:9px;height:9px;border-radius:50%;background:#5fd0a8;box-shadow:0 0 6px #5fd0a8;}
+.nav .spacer{flex:1;}
+.nav a{color:rgba(255,255,255,.82);padding:6px 14px;border-radius:5px;font-size:13px;transition:.2s;margin-left:4px;}
+.nav a:hover,.nav a.active{background:rgba(255,255,255,.15);color:#fff;}
+.nav .badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:6px;padding:3px 12px;font-size:11px;margin-left:12px;}
+
+.container{max-width:860px;margin:24px auto 40px;padding:0 16px;}
+
+.section-title{
+  font-size:13px;font-weight:700;color:#1A3A5C;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title .bar{width:4px;height:14px;background:#2E6DA4;border-radius:2px;}
+
+.card-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;}
+
+.card{
+  display:flex;align-items:center;background:#fff;border-radius:10px;
+  padding:16px 20px;box-shadow:0 1px 6px rgba(0,0,0,.06);
+  transition:transform .2s,box-shadow .2s;border:1px solid #e3eaf2;gap:14px;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,109,164,.15);border-color:#2E6DA4;}
+
+.card .icon{font-size:26px;width:44px;text-align:center;flex-shrink:0;}
+
+.card .body{flex:1;min-width:0;}
+.card .body .title{font-size:15px;font-weight:700;color:#1A3A5C;margin-bottom:2px;}
+.card .body .desc{font-size:12px;color:#8a97a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.card .stats{display:flex;gap:20px;flex-shrink:0;}
+.card .st{margin-left:12px;text-align:center;}
+.card .st .v{font-size:17px;font-weight:700;color:#2E6DA4;}
+.card .st .l{font-size:10px;color:#999;}
+
+.card.weekly{border-left:4px solid #2E6DA4;}
+.card.monthly{border-left:4px solid #C00000;}
+
+.tag-new{
+  background:linear-gradient(135deg,#2a9d8f,#4db8ac);color:#fff;
+  font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;margin-left:8px;
+}
+
+.footer{text-align:center;color:#aaa;font-size:11px;margin-top:32px;}
+
+@media (max-width:640px){
+  .card{flex-wrap:wrap;}
+  .card .stats{width:100%;justify-content:flex-end;}
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand"><span class="dot"></span> 尚美医疗 · 生产驾驶舱</div>
+  <div class="spacer"></div>
+  <a href="../index.html">回首页</a>
+  <a href="history.html">历史报表</a>
+  <span class="badge">净化车间 · 组装</span>
+</div>
+
+<div class="container">
+
+  <div class="section-title"><span class="bar"></span>📆 月报仪表盘</div>
+  <div class="card-list">
+    <a class="card monthly" href="history/月报仪表盘_2026年8月.html">
+      <div class="icon" style="color:#C00000">📈</div>
+      <div class="body">
+        <div class="title">2026年8月<span class="tag-new">NEW</span></div>
+        <div class="desc">大线vs小线拆分 · 周度趋势 · 环比对比 · Top 10</div>
+      </div>
+      <div class="stats">
+        <div class="st"><div class="v">573,679</div><div class="l">产量</div></div>
+        <div class="st"><div class="v">155.8</div><div class="l">UPH</div></div>
+      </div>
+    </a>
+    <a class="card monthly" href="history/月报仪表盘_2026年7月.html">
+      <div class="icon" style="color:#C00000">📈</div>
+      <div class="body">
+        <div class="title">2026年7月</div>
+        <div class="desc">大线vs小线拆分 · 周度趋势 · 环比对比 · Top 10</div>
+      </div>
+      <div class="stats">
+        <div class="st"><div class="v">457,561</div><div class="l">产量</div></div>
+        <div class="st"><div class="v">171.8</div><div class="l">UPH</div></div>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-title"><span class="bar"></span>📅 周报仪表盘</div>
+  <div class="card-list">
+    <a class="card weekly" href="history/W35_周报仪表盘.html">
+      <div class="icon" style="color:#2E6DA4">📋</div>
+      <div class="body">
+        <div class="title">W35 · 8/24 — 8/30<span class="tag-new">NEW</span></div>
+        <div class="desc">KPI卡片 · 趋势图 · 环形图 · 日度进度 · 良率</div>
+      </div>
+      <div class="stats">
+        <div class="st"><div class="v">157,865</div><div class="l">产量</div></div>
+        <div class="st"><div class="v">173.6</div><div class="l">UPH</div></div>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">
+    <a href="history.html" style="color:#2E6DA4;text-decoration:underline">查看全部历史报表 →</a>
+    <div style="margin-top:12px">尚美医疗生产报告系统 · 仪表盘自动生成</div>
+  </div>
+
+</div>
+</body>
+</html>

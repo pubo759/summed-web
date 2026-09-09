@@ -1,0 +1,22 @@
+# ===== 内部数据与记忆（不上传）=====
+.workbuddy/
+__pycache__/
+*.pyc
+
+# ===== 后端代码与数据（保留在本地）=====
+order-checker/
+aps-rebuild/
+*.py
+*.db
+*.log
+*.bat
+*.vbs
+*.bak
+
+# ===== 历史部署报告 =====
+deploy_report_*.md
+
+# ===== 其他临时文件 =====
+*.tmp
+.DS_Store
+Thumbs.db

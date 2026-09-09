@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台账中心 - 尚美医疗生产管理系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#f0f4f8;color:#333;min-height:100vh}
+.nav{
+  background:linear-gradient(135deg,#1A3A5C,#2E6DA4);color:#fff;height:50px;display:flex;
+  align-items:center;justify-content:center;position:relative;
+  padding:0 28px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.nav .brand{font-size:16px;font-weight:700;letter-spacing:1px}
+.nav-right{position:absolute;right:28px;display:flex;gap:8px;align-items:center}
+.nav-right a{
+  color:rgba(255,255,255,.85);padding:6px 14px;border-radius:5px;
+  font-size:13px;transition:.2s;text-decoration:none;
+}
+.nav-right a:hover{background:rgba(255,255,255,.15);color:#fff}
+.container{max-width:900px;margin:40px auto;padding:0 16px}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.card{background:#fff;border-radius:14px;padding:28px 20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:.2s;cursor:pointer;text-decoration:none;color:inherit;display:block}
+.card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.card .icon{font-size:44px;margin-bottom:14px;display:block}
+.card h2{font-size:16px;color:#1A3A5C;margin-bottom:8px}
+.card p{font-size:12px;color:#888;line-height:1.5}
+.card .badge{display:inline-block;margin-top:12px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600}
+.card .badge.blue{background:#e8f0fe;color:#1a73e8}
+.card .badge.green{background:#e8f5e9;color:#2e7d32}
+.card .badge.purple{background:#f3e8ff;color:#7c3aed}
+.card .badge.orange{background:#fff3e0;color:#e65100}
+.card .badge.teal{background:#e0f2f1;color:#00695c}
+.card .badge.red{background:#fce4ec;color:#c62828}
+.card .badge.indigo{background:#e8eaf6;color:#283593}
+.card .badge.cyan{background:#e0f7fa;color:#00838f}
+@media(max-width:800px){.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="brand">台账中心</span>
+  <div class="nav-right">
+    <a href="../index.html">&larr; 返回主页</a>
+  </div>
+</div>
+<div class="container">
+<div class="cards">
+  <a class="card" href="https://www.kdocs.cn/l/cdsjBV7bvSAP" target="_blank">
+    <span class="icon">&#x1F4CB;</span>
+    <h2>生产通知单</h2>
+    <p>尚美生产通知<br>生产任务下达与确认</p>
+    <span class="badge blue">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/chezyeAy09XV" target="_blank">
+    <span class="icon">&#x1F4C5;</span>
+    <h2>生产计划单</h2>
+    <p>尚美生产计划单<br>排产计划与进度</p>
+    <span class="badge purple">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/ctdQh8wz2wnA" target="_blank">
+    <span class="icon">&#x1F3ED;</span>
+    <h2>原材料仓库</h2>
+    <p>2026仓库原材料台账<br>原材料库存管理</p>
+    <span class="badge teal">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/cninXchUnsUe" target="_blank">
+    <span class="icon">&#x1F4E6;</span>
+    <h2>中间库领料记录</h2>
+    <p>中间品仓库领料<br>物料出入库台账</p>
+    <span class="badge green">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/ccaesMmUCvXC" target="_blank">
+    <span class="icon">&#x1F50D;</span>
+    <h2>倒刺线巡检</h2>
+    <p>倒刺线质量巡检<br>生产过程检验记录</p>
+    <span class="badge orange">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/citPt8eyPoCa" target="_blank">
+    <span class="icon">&#x2705;</span>
+    <h2>质量物料检验</h2>
+    <p>物料检验汇总2026<br>来料质量检验记录</p>
+    <span class="badge indigo">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/cnD5GrZOiwlD" target="_blank">
+    <span class="icon">&#x1F527;</span>
+    <h2>切刺机售后追踪</h2>
+    <p>倒刺切割机问题汇总<br>闭环管理表</p>
+    <span class="badge red">打开文档</span>
+  </a>
+  <a class="card" href="https://www.kdocs.cn/l/cfr3vNvH7e4R" target="_blank">
+    <span class="icon">&#x1F4DD;</span>
+    <h2>检验日程清单</h2>
+    <p>检验日程安排<br>质量检验计划与进度</p>
+    <span class="badge orange">打开文档</span>
+  </a>
+  <a class="card" href="redcard.html">
+    <span class="icon">&#x1F0CF;</span>
+    <h2>不良事件与红牌抽查</h2>
+    <p>9项不良事件清单<br>整改措施 · 植入缺陷红牌测试</p>
+    <span class="badge cyan">查看方案</span>
+  </a>
+</div>
+</div>
+</body>
+</html>

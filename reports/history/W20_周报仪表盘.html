@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>W20 周报仪表盘 · 尚美医疗净化车间</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --navy:#1A3A5C;--blue:#2E6DA4;--blue-mid:#3A7ABF;--blue-soft:#EAF2FB;
+  --bg:#f0f4f8;--total:#FCE4D6;--red:#C00000;--green:#008000;--amber:#c77000;
+  --amber-bg:#fff8e1;--line:#e3eaf2;--muted:#8a97a8;--ink:#2a3543;--line-c:#e3eaf2;
+}
+html,body{font-family:"微软雅黑","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+
+/* ---------- 顶部导航 ---------- */
+.nav{background:linear-gradient(90deg,#0F2A45 0%,#1A3A5C 55%,#2E6DA4 100%);color:#fff;height:58px;display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:0 2px 14px rgba(15,42,69,.35);}
+.nav .brand{font-size:16px;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
+.nav .brand .dot{width:10px;height:10px;border-radius:50%;background:#5fd0a8;box-shadow:0 0 8px #5fd0a8;}
+.nav .spacer{flex:1;}
+.nav .crumbs{display:flex;gap:6px;align-items:center;font-size:12px;color:rgba(255,255,255,.7);}
+.nav .crumbs .sep{opacity:.5;}
+.nav .crumbs .cur{color:#fff;font-weight:600;}
+.nav .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600;letter-spacing:.5px;margin-left:18px;}
+.nav .back-btn{background:rgba(95,208,168,.2);border:1px solid rgba(95,208,168,.4);border-radius:20px;padding:6px 16px;font-size:12px;color:#5fd0a8;cursor:pointer;font-weight:600;transition:all .2s;display:flex;align-items:center;gap:5px;margin-left:18px;text-decoration:none;}
+.nav .back-btn:hover{background:rgba(95,208,168,.3);color:#fff;border-color:#5fd0a8;}
+.nav .back-btn .arr{font-size:14px;line-height:1;}
+
+/* ---------- 容器 ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding:24px 18px 60px;}
+
+/* ---------- 英雄区 ---------- */
+.hero{background:linear-gradient(135deg,#1A3A5C 0%,#2E6DA4 60%,#3A7ABF 100%);border-radius:16px;padding:26px 30px;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(26,58,92,.28);margin-bottom:22px;}
+.hero::before{content:"";position:absolute;right:-60px;top:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 70%);}
+.hero::after{content:"";position:absolute;right:80px;bottom:-100px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(95,208,168,.15) 0%,transparent 70%);}
+.hero .eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:6px;}
+.hero h1{font-size:26px;font-weight:800;margin-bottom:10px;position:relative;z-index:2;}
+.hero .meta{display:flex;flex-wrap:wrap;gap:18px;font-size:13px;color:rgba(255,255,255,.92);position:relative;z-index:2;}
+.hero .meta .item{display:flex;align-items:center;gap:6px;}
+.hero .meta .item .k{color:rgba(255,255,255,.6);font-size:11px;}
+.hero .meta .item .v{font-weight:600;}
+.hero .meta .item .sep{width:1px;height:18px;background:rgba(255,255,255,.18);}
+.hero .stamp{position:absolute;right:30px;top:24px;background:rgba(255,255,255,.14);border:1px dashed rgba(255,255,255,.45);border-radius:10px;padding:8px 14px;text-align:center;backdrop-filter:blur(4px);z-index:3;}
+.hero .stamp .big{font-size:22px;font-weight:800;letter-spacing:1px;}
+.hero .stamp .sm{font-size:10px;letter-spacing:1px;color:rgba(255,255,255,.7);}
+
+/* ---------- 通用卡片 ---------- */
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 10px rgba(20,40,70,.05);overflow:hidden;margin-bottom:22px;}
+.card .card-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;}
+.card .card-head .bar{width:4px;height:14px;background:var(--blue);border-radius:2px;}
+.card .card-head h3{font-size:14px;font-weight:700;color:var(--navy);}
+.card .card-head .sub{font-size:11px;color:var(--muted);margin-left:auto;}
+.card .card-body{padding:16px 18px;}
+
+/* ---------- KPI 网格 ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(46,109,164,.15);}
+.kpi .label{font-size:11px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.kpi .label .ico{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;}
+.kpi .value{font-size:24px;font-weight:800;color:var(--navy);line-height:1.1;letter-spacing:-.5px;}
+.kpi .unit{font-size:11px;color:var(--muted);font-weight:500;margin-left:3px;}
+.kpi .trend{margin-top:8px;font-size:11px;display:flex;align-items:center;gap:4px;}
+.kpi .trend .vs{color:var(--muted);}
+.kpi .trend .delta{font-weight:700;padding:1px 6px;border-radius:4px;}
+.kpi .trend .delta.up{color:var(--red);background:#fde8ea;}
+.kpi .trend .delta.down{color:var(--green);background:#e6f4ea;}
+.kpi .trend .delta.flat{color:var(--muted);background:#eef1f5;}
+.kpi .spark{position:absolute;right:10px;bottom:8px;width:60px;height:24px;opacity:.5;}
+
+/* ---------- 图表网格 ---------- */
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:22px;}
+.grid-2-alt{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px;}
+.chart-box{position:relative;height:300px;}
+.chart-box.tall{height:360px;}
+.chart-box.short{height:260px;}
+
+/* ---------- 大线 vs 小线 对比卡片（月报专用）---------- */
+.split-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:stretch;}
+.split-card{border-radius:10px;padding:18px;border:1px solid var(--line);display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.split-card.big{background:linear-gradient(135deg,#fff8f5,#fff);border-color:#f5d4c4;}
+.split-card.small{background:linear-gradient(135deg,#f4faf4,#fff);border-color:#c8e6c9;}
+.split-card.total{background:linear-gradient(135deg,#eaf2fb,#fff);border-color:#c5dcec;}
+.split-card .tag{position:absolute;top:14px;right:14px;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:.5px;}
+.split-card.big .tag{background:#fde8ea;color:#C00000;}
+.split-card.small .tag{background:#e6f4ea;color:#008000;}
+.split-card.total .tag{background:#eaf2fb;color:#2E6DA4;}
+.split-card .name{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.split-card .prefix{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.split-card .big-num{font-size:32px;font-weight:800;line-height:1;margin-bottom:4px;}
+.split-card.big .big-num{color:var(--red);}
+.split-card.small .big-num{color:var(--green);}
+.split-card.total .big-num{color:var(--navy);}
+.split-card .big-label{font-size:11px;color:var(--muted);margin-bottom:14px;}
+.split-card .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;}
+.split-card .metrics .m{background:rgba(255,255,255,.6);padding:6px 10px;border-radius:6px;}
+.split-card .metrics .m .l{color:var(--muted);font-size:10px;display:block;}
+.split-card .metrics .m .v{font-weight:700;color:var(--navy);}
+
+/* ---------- 表格 ---------- */
+.tbl-wrap{overflow-x:auto;}
+table.dt{width:100%;border-collapse:collapse;font-size:12px;}
+table.dt th,table.dt td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line);}
+table.dt thead th{background:linear-gradient(180deg,#2E6DA4,#1A3A5C);color:#fff;font-weight:600;font-size:11px;letter-spacing:.3px;position:sticky;top:0;}
+table.dt tbody tr:nth-child(even){background:#f7fafd;}
+table.dt tbody tr:hover{background:#eaf2fb;}
+table.dt td.l{text-align:left;}
+table.dt .total-row td{background:#FCE4D6;font-weight:700;border-top:2px solid #f0b88c;}
+table.dt .red{color:var(--red);font-weight:700;}
+table.dt .green{color:var(--green);font-weight:700;}
+table.dt .amber{color:var(--amber);font-weight:700;}
+
+/* UPH/达标率 进度条 */
+.pbar{display:flex;align-items:center;gap:8px;justify-content:center;}
+.pbar .track{flex:1;max-width:80px;height:7px;background:#eef1f5;border-radius:4px;overflow:hidden;}
+.pbar .fill{height:100%;border-radius:4px;}
+.pbar .num{font-size:11px;font-weight:700;min-width:42px;text-align:right;}
+
+/* 作业员排名条 */
+.rank-row{display:grid;grid-template-columns:34px 1fr 100px 90px 70px;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;}
+.rank-row:last-child{border-bottom:none;}
+.rank-row .rk{width:26px;height:26px;border-radius:50%;background:#eef1f5;color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;}
+.rank-row.r1 .rk{background:linear-gradient(135deg,#f4c542,#e0a020);color:#fff;box-shadow:0 2px 6px rgba(224,160,32,.45);}
+.rank-row.r2 .rk{background:linear-gradient(135deg,#c5cad2,#9aa0a8);color:#fff;}
+.rank-row.r3 .rk{background:linear-gradient(135deg,#d49a6a,#b87a4a);color:#fff;}
+.rank-row .name{font-weight:600;color:var(--navy);}
+.rank-row .bar-cell{display:flex;align-items:center;gap:6px;}
+.rank-row .bar-cell .track{flex:1;height:6px;background:#eef1f5;border-radius:4px;overflow:hidden;}
+.rank-row .bar-cell .fill{height:100%;background:linear-gradient(90deg,#2E6DA4,#3A7ABF);border-radius:4px;}
+.rank-row .v{text-align:right;font-variant-numeric:tabular-nums;}
+.rank-row .uph{color:var(--blue);font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+
+/* 良率行 */
+.yield-row{display:grid;grid-template-columns:30px 1.4fr 70px 1fr 60px;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line);font-size:12px;}
+.yield-row:last-child{border-bottom:none;}
+.yield-row .idx{color:var(--muted);font-weight:600;text-align:center;}
+.yield-row .mat{font-weight:600;color:var(--navy);}
+.yield-row .mat.warn{color:var(--red);}
+.yield-row .inp{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);}
+.yield-row .ybar{display:flex;align-items:center;gap:6px;}
+.yield-row .ybar .track{flex:1;height:9px;background:#eef1f5;border-radius:5px;overflow:hidden;}
+.yield-row .ybar .fill{height:100%;border-radius:5px;}
+.yield-row .ypct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+
+/* 警示条 */
+.alert{background:#fde8ea;border-left:4px solid var(--red);border-radius:8px;padding:10px 14px;font-size:12px;color:#7a1a22;display:flex;align-items:center;gap:8px;margin-top:12px;}
+.alert .ico{font-size:14px;}
+
+/* 环比对比卡片（月报专用） */
+.compare-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;}
+.compare-card .cc-title{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.compare-card .cc-title .ic{font-size:16px;}
+.compare-row{display:grid;grid-template-columns:110px 1fr 1fr 90px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);}
+.compare-row:last-child{border-bottom:none;}
+.compare-row .cr-label{font-size:12px;font-weight:600;color:var(--navy);}
+.compare-row .cr-this{font-size:16px;font-weight:700;color:var(--navy);text-align:right;}
+.compare-row .cr-last{font-size:13px;color:var(--muted);text-align:right;}
+.compare-row .cr-delta{text-align:right;font-weight:700;font-size:12px;}
+.compare-row .cr-delta.up{color:var(--red);}
+.compare-row .cr-delta.down{color:var(--green);}
+.compare-row .cr-delta.flat{color:var(--muted);}
+
+/* ---------- 页脚 ---------- */
+.foot{margin-top:30px;border-top:2px solid var(--navy);background:#fff;border-radius:8px;padding:14px 18px;font-size:12px;color:var(--muted);display:flex;gap:30px;box-shadow:0 2px 8px rgba(20,40,70,.05);}
+.foot .sig{display:flex;align-items:center;gap:8px;}
+.foot .sig .line{display:inline-block;width:120px;border-bottom:1px solid #c5cdd8;height:1px;}
+.foot .right{margin-left:auto;text-align:right;}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:1100px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr);}
+  .grid-2,.grid-2-alt,.grid-3{grid-template-columns:1fr;}
+  .split-row{grid-template-columns:1fr;}
+}
+@media (max-width:640px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .hero h1{font-size:20px;}
+  .hero .stamp{position:static;margin-top:14px;display:inline-block;}
+}
+
+/* 入场动画 */
+@keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.kpi,.card,.hero{animation:rise .5s ease both;}
+.kpi:nth-child(2){animation-delay:.05s;}.kpi:nth-child(3){animation-delay:.1s;}
+.kpi:nth-child(4){animation-delay:.15s;}.kpi:nth-child(5){animation-delay:.2s;}
+.kpi:nth-child(6){animation-delay:.25s;}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand"><span class="dot"></span> 尚美医疗 · 生产驾驶舱</div>
+  <div class="spacer"></div>
+  <div class="crumbs">
+    <span>报表中心</span><span class="sep">/</span>
+    <span>周报</span><span class="sep">/</span>
+    <span class="cur">W20</span>
+  </div>
+  <a href="../index.html" class="back-btn"><span class="arr">←</span> 返回报告选择</a>
+  <span class="pill">净化车间 · 组装</span>
+</div>
+<div class="wrap">
+
+<div class="hero">
+  <div class="eyebrow">WEEKLY PRODUCTION DASHBOARD</div>
+  <h1>第20周 · 生产周报仪表盘</h1>
+  <div class="meta">
+    <div class="item"><span class="k">统计周期</span><span class="v">2026-05-11 至 2026-05-16</span></div><div class="sep"></div><div class="item"><span class="k">车间</span><span class="v">净化车间</span></div><div class="sep"></div><div class="item"><span class="k">工序</span><span class="v">组装</span></div><div class="sep"></div><div class="item"><span class="k">型号数</span><span class="v">10</span></div><div class="sep"></div><div class="item"><span class="k">参与人数</span><span class="v">23</span></div><div class="sep"></div><div class="item"><span class="k">生成日期</span><span class="v">2026-08-17</span></div>
+  </div>
+  <div class="stamp">
+    <div class="big">W20</div>
+    <div class="sm">2026 · WEEK 20</div>
+  </div>
+</div>
+<div class="kpi-grid">
+<div class="kpi k-output">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#2E6DA4,#3A7ABF)">📦</span>累计产量</div>
+  <div class="value">143,130</div>
+  <div class="unit">个</div>
+  <div class="trend">
+    <span class="vs">上周 140,192</span>
+    <span class="delta up">▲ +2.1%</span>
+  </div>
+  <canvas class="spark" id="sp0"></canvas>
+</div>
+<div class="kpi k-hours">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#7a5be0,#9b7fee)">⏱</span>累计工时</div>
+  <div class="value">763.20</div>
+  <div class="unit">h</div>
+  <div class="trend">
+    <span class="vs">上周 846.71</span>
+    <span class="delta down">▼ 9.9%</span>
+  </div>
+  <canvas class="spark" id="sp1"></canvas>
+</div>
+<div class="kpi k-days">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#1A3A5C,#2E6DA4)">📅</span>生产天数</div>
+  <div class="value">6</div>
+  <div class="unit">天</div>
+  <div class="trend">
+    <span class="vs">上周 6</span>
+    <span class="delta flat">持平</span>
+  </div>
+  <canvas class="spark" id="sp2"></canvas>
+</div>
+<div class="kpi k-people">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#e0863a,#f0a45c)">👥</span>参与人数</div>
+  <div class="value">23</div>
+  <div class="unit">人</div>
+  <div class="trend">
+    <span class="vs">上周 0</span>
+    <span class="delta flat">—</span>
+  </div>
+  <canvas class="spark" id="sp3"></canvas>
+</div>
+<div class="kpi k-davg">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#2a9d8f,#4db8ac)">📈</span>日均产量</div>
+  <div class="value">23,855</div>
+  <div class="unit">个/天</div>
+  <div class="trend">
+    <span class="vs">上周 23,365</span>
+    <span class="delta up">▲ +2.1%</span>
+  </div>
+  <canvas class="spark" id="sp4"></canvas>
+</div>
+<div class="kpi k-havg">
+  <div class="label"><span class="ico" style="background:linear-gradient(135deg,#b5485f,#d56b85)">⚡</span>日均工时</div>
+  <div class="value">127.20</div>
+  <div class="unit">h/天</div>
+  <div class="trend">
+    <span class="vs">上周 141.12</span>
+    <span class="delta down">▼ 9.9%</span>
+  </div>
+  <canvas class="spark" id="sp5"></canvas>
+</div></div>
+<div class="grid-2">
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>近5周生产趋势</h3><span class="sub">产量 / 工时 / 人数</span></div>
+      <div class="card-body"><div class="chart-box tall"><canvas id="trendChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>本周型号产量分布</h3><span class="sub">10 个型号</span></div>
+      <div class="card-body"><div class="chart-box tall"><canvas id="modelChart"></canvas></div></div>
+    </div>
+  </div>
+<div class="grid-2-alt">
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>本周按日生产进度</h3><span class="sub">日产量 + 累计产量走势</span></div>
+      <div class="card-body"><div class="chart-box"><canvas id="dailyChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>物料良率对比</h3><span class="sub">8 类物料</span></div>
+      <div class="card-body"><div class="chart-box"><canvas id="yieldChart"></canvas></div></div>
+    </div>
+  </div>
+<div class="card">
+    <div class="card-head"><span class="bar"></span><h3>一、型号与批号统计</h3><span class="sub">实际 UPH / 达标率</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap">
+        <table class="dt">
+          <thead>
+            <tr>
+              <th style="width:34px">#</th>
+              <th class="l">型号</th>
+              <th class="l">批号</th>
+              <th>产量(个)</th>
+              <th>工时(h)</th>
+              <th>实际 UPH</th>
+              <th>达标率</th>
+            </tr>
+          </thead>
+          <tbody id="modelTbody"></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="3">合计（型号：10）</td>
+              <td id="modelTotalQty">143,130</td>
+              <td id="modelTotalHours">763.20</td>
+              <td id="modelTotalUPH">187.5</td>
+              <td>—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+<div class="grid-2-alt">
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>二、作业员本周产量排行</h3><span class="sub">Top 10（共 23 人）</span></div>
+      <div class="card-body">
+        <div class="rank-row" style="background:#eef3f9;font-size:11px;color:var(--muted);font-weight:600;">
+          <div>#</div><div>姓名</div><div style="text-align:right;">产量(个)</div><div style="text-align:right;">工时(h)</div><div style="text-align:right;">UPH</div>
+        </div>
+        <div id="rankList"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="bar"></span><h3>三、物料良率汇总</h3><span class="sub">投料 / 工序良率</span></div>
+      <div class="card-body">
+        <div class="yield-row" style="background:#eef3f9;font-size:11px;color:var(--muted);font-weight:600;">
+          <div>#</div><div>物料</div><div style="text-align:right;">投料数</div><div>工序良率</div><div style="text-align:right;">%</div>
+        </div>
+        <div id="yieldList"></div>
+        <div id="alertBox"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+const TREND = {"labels": ["W20"], "output": [143131], "hours": [763.2], "people": [23], "uph": [187.5]};
+const MODELS = [{"name": "C1121960WC(H)", "batch": "2617103H", "qty": 1800, "hrs": 8.52, "uph": 211.3, "target": 220.0, "rate": 0.96}, {"name": "C2122060Lc(H)", "batch": "2613502H", "qty": 2400, "hrs": 16.5, "uph": 145.5, "target": 220.0, "rate": 0.66}, {"name": "CA151910WC(H)", "batch": "2616303H", "qty": 1700, "hrs": 7.98, "uph": 213.0, "target": 220.0, "rate": 0.97}, {"name": "CB151810WC(H)", "batch": "2616302H", "qty": 9200, "hrs": 46.38, "uph": 198.4, "target": 220.0, "rate": 0.9}, {"name": "CB151810WC(U)", "batch": "2551403X", "qty": 40, "hrs": 0.17, "uph": 235.3, "target": 220.0, "rate": 1.07}, {"name": "M55027380A", "batch": "2550201X、2618303X", "qty": 24324, "hrs": 112.66, "uph": 215.9, "target": 220.0, "rate": 0.98}, {"name": "M55027380a", "batch": "2618306X", "qty": 20200, "hrs": 103.5, "uph": 195.2, "target": 220.0, "rate": 0.89}, {"name": "M65029380A", "batch": "2618302X", "qty": 46386, "hrs": 223.39, "uph": 207.6, "target": 220.0, "rate": 0.94}, {"name": "S55027380A", "batch": "2618304X", "qty": 20200, "hrs": 115.45, "uph": 175.0, "target": 220.0, "rate": 0.8}, {"name": "S67029500a", "batch": "2618305X", "qty": 16880, "hrs": 128.65, "uph": 131.2, "target": 220.0, "rate": 0.6}];
+const DAILY = [{"d": "5/11 周一", "qty": 17045, "ppl": 0, "cum": 17045}, {"d": "5/12 周二", "qty": 24698, "ppl": 0, "cum": 41743}, {"d": "5/13 周三", "qty": 29281, "ppl": 0, "cum": 71024}, {"d": "5/14 周四", "qty": 22592, "ppl": 0, "cum": 93616}, {"d": "5/15 周五", "qty": 27013, "ppl": 0, "cum": 120629}, {"d": "5/16 周六", "qty": 22502, "ppl": 0, "cum": 143131}];
+const RANK = [{"n": "曹馨慧", "q": 9382, "h": 38.5, "u": 243.7}, {"n": "王倩倩", "q": 8443, "h": 38.5, "u": 219.3}, {"n": "普天慧", "q": 8111, "h": 38.67, "u": 209.7}, {"n": "王明艳", "q": 7956, "h": 38.5, "u": 206.6}, {"n": "鲍倩楠", "q": 7757, "h": 38.67, "u": 200.6}, {"n": "刘娟", "q": 8049, "h": 41.16, "u": 195.6}, {"n": "陶聪维", "q": 5044, "h": 26.01, "u": 193.9}, {"n": "芦悦", "q": 7863, "h": 40.57, "u": 193.8}, {"n": "刘晓艳", "q": 7820, "h": 40.57, "u": 192.8}, {"n": "兰琴", "q": 6453, "h": 33.82, "u": 190.8}];
+const YIELDS = [{"mat": "固定环", "inp": 2413, "rate": 0.9946, "bad_in": 13, "bad_op": 0, "bad_mac": 0, "warn": false}, {"mat": "塞管", "inp": 12720, "rate": 0.9984, "bad_in": 20, "bad_op": 0, "bad_mac": 0, "warn": false}, {"mat": "套管针", "inp": 141304, "rate": 0.9973, "bad_in": 357, "bad_op": 30, "bad_mac": 0, "warn": false}, {"mat": "海绵", "inp": 132181, "rate": 0.9817, "bad_in": 2420, "bad_op": 0, "bad_mac": 0, "warn": false}, {"mat": "纸塑袋", "inp": 57226, "rate": 0.9701, "bad_in": 739, "bad_op": 15, "bad_mac": 956, "warn": false}, {"mat": "纸盒", "inp": 243, "rate": 0.8395, "bad_in": 39, "bad_op": 0, "bad_mac": 0, "warn": true}, {"mat": "纸箱", "inp": 54, "rate": 0.963, "bad_in": 2, "bad_op": 0, "bad_mac": 0, "warn": false}, {"mat": "铝箔袋", "inp": 6993, "rate": 0.8059, "bad_in": 1336, "bad_op": 21, "bad_mac": 0, "warn": true}];
+window.SPARK_DATA = [[143131], [763.2], [143131], [23], [143131], [763.2]];
+
+/* ---------- KPI Sparkline ---------- */
+const C = {navy:'#1A3A5C',blue:'#2E6DA4',mid:'#3A7ABF',red:'#C00000',green:'#008000',amber:'#c77000',grid:'#e6ebf2',text:'#2a3543',muted:'#8a97a8',palette:['#2E6DA4','#3A7ABF','#5b9bd5','#7fb3dd','#9bc8e6','#c5dcec','#e0863a','#b5485f','#2a9d8f','#7a5be0']};
+Chart.defaults.font.family = '"微软雅黑","PingFang SC",sans-serif';
+Chart.defaults.color = C.text;
+Chart.defaults.font.size = 11;
+
+const SPARK_COLORS = [C.blue, '#7a5be0', C.navy, '#e0863a', '#2a9d8f', '#b5485f'];
+document.querySelectorAll('.kpi canvas.spark').forEach((canvas, i) => {
+  if (!window.SPARK_DATA || !window.SPARK_DATA[i]) return;
+  const sd = window.SPARK_DATA[i];
+  new Chart(canvas, {
+    type:'line',
+    data:{ labels:sd.map((_,j)=>j+1), datasets:[{ data:sd, borderColor:SPARK_COLORS[i]||C.blue, borderWidth:1.5, pointRadius:0, tension:.4, fill:true, backgroundColor:(SPARK_COLORS[i]||C.blue)+'22' }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}}, elements:{line:{borderJoinStyle:'round'}} }
+  });
+});
+
+
+/* ---------- 趋势图 ---------- */
+new Chart(document.getElementById('trendChart'), {
+  data:{
+    labels:TREND.labels,
+    datasets:[
+      { type:'bar', label:'产量(个)', data:TREND.output, backgroundColor:C.blue, borderRadius:6, maxBarThickness:36, yAxisID:'y', order:2 },
+      { type:'line', label:'工时(h)', data:TREND.hours, borderColor:'#7a5be0', backgroundColor:'#7a5be0', borderWidth:2.5, tension:.35, pointRadius:4, pointBackgroundColor:'#7a5be0', yAxisID:'y1', order:1 },
+      { type:'line', label:'人数(人)', data:TREND.people, borderColor:'#e0863a', backgroundColor:'#e0863a', borderWidth:2, borderDash:[5,4], tension:.35, pointRadius:3, yAxisID:'y1', order:1 }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10, boxHeight:10, padding:14}}, tooltip:{backgroundColor:'rgba(26,58,92,.95)', padding:10, cornerRadius:6, titleFont:{weight:'bold'}} },
+    scales:{
+      x:{grid:{display:false}},
+      y:{position:'left', grid:{color:C.grid}, ticks:{callback:v=>(v/1000).toFixed(0)+'k'}, title:{display:true,text:'产量(个)',color:C.muted,font:{size:10}}},
+      y1:{position:'right', grid:{display:false}, title:{display:true,text:'工时 / 人数',color:C.muted,font:{size:10}}}
+    }
+  }
+});
+
+
+/* ---------- 型号分布环形图 ---------- */
+const modelChartCtx = document.getElementById('modelChart');
+const totalQty = MODELS.reduce((s,m)=>s+m.qty,0);
+new Chart(modelChartCtx, {
+  type:'doughnut',
+  data:{
+    labels:MODELS.map(m=>m.name),
+    datasets:[{ data:MODELS.map(m=>m.qty), backgroundColor:C.palette, borderColor:'#fff', borderWidth:2, hoverOffset:8 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false, cutout:'62%',
+    plugins:{
+      legend:{position:'right', labels:{boxWidth:10, boxHeight:10, padding:8, font:{size:11}}},
+      tooltip:{ backgroundColor:'rgba(26,58,92,.95)', padding:10, cornerRadius:6, callbacks:{ label:c=>{ const p=(c.parsed/totalQty*100).toFixed(1); return ` ${c.label}: ${c.parsed.toLocaleString()} 个 (${p}%)`; } } }
+    }
+  },
+  plugins:[{ id:'centerText', afterDraw(chart){
+    const {ctx,chartArea}=chart; if(!chartArea) return;
+    const cx=(chartArea.left+chartArea.right)/2, cy=(chartArea.top+chartArea.bottom)/2;
+    ctx.save(); ctx.textAlign='center'; ctx.fillStyle=C.navy; ctx.font='700 22px 微软雅黑';
+    ctx.fillText(totalQty.toLocaleString(), cx, cy-4);
+    ctx.fillStyle=C.muted; ctx.font='11px 微软雅黑'; ctx.fillText('总产量(个)', cx, cy+16);
+    ctx.restore();
+  } }]
+});
+
+
+/* ---------- 按日进度图 ---------- */
+new Chart(document.getElementById('dailyChart'), {
+  data:{
+    labels:DAILY.map(d=>d.d),
+    datasets:[
+      { type:'bar', label:'日产量(个)', data:DAILY.map(d=>d.qty), backgroundColor:C.mid, borderRadius:5, maxBarThickness:32, yAxisID:'y', order:2 },
+      
+      { type:'line', label:'累计产量(个)', data:DAILY.map(d=>d.cum), borderColor:C.red, backgroundColor:C.red, borderWidth:2.5, tension:.3, pointRadius:4, pointBackgroundColor:C.red, yAxisID:'y1', order:1, fill:true, backgroundColor:'rgba(192,0,0,.08)' }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10, boxHeight:10, padding:14}}, tooltip:{backgroundColor:'rgba(26,58,92,.95)', padding:10, cornerRadius:6} },
+    scales:{
+      x:{grid:{display:false}},
+      y:{position:'left', grid:{color:C.grid}, ticks:{callback:v=>(v/1000).toFixed(0)+'k'}},
+      y1:{position:'right', grid:{display:false}, ticks:{callback:v=>(v/1000).toFixed(0)+'k'}}
+    }
+  }
+});
+
+
+/* ---------- 良率水平条形图 ---------- */
+const yieldSorted = [...YIELDS].sort((a,b)=>b.rate-a.rate);
+new Chart(document.getElementById('yieldChart'), {
+  type:'bar',
+  data:{
+    labels:yieldSorted.map(y=>y.mat),
+    datasets:[{ label:'工序良率', data:yieldSorted.map(y=>+(y.rate*100).toFixed(2)),
+      backgroundColor:yieldSorted.map(y=>{ const p=y.rate*100; if(p<90) return C.red; if(p>=99) return C.green; if(p>=97) return C.mid; return '#e0a020'; }),
+      borderRadius:5, maxBarThickness:24 }
+    ]
+  },
+  options:{
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(26,58,92,.95)', padding:10, cornerRadius:6, callbacks:{label:c=>` 良率 ${c.parsed.x.toFixed(2)}%`} } },
+    scales:{ x:{min:(Math.min(...yieldSorted.map(y=>y.rate*100))>=80?80:0), max:100, grid:{color:C.grid}, ticks:{callback:v=>v+'%'}}, y:{grid:{display:false}} }
+  }
+});
+
+
+/* ---------- 型号统计表 ---------- */
+const UPH_BASE = 220;
+const modelTb = document.getElementById('modelTbody');
+MODELS.forEach((m, i) => {
+  const uphPct = Math.min(m.uph / (m.target||220) / 1.3, 1.2) / 1.2 * 100;
+  const ratePct = Math.min(m.rate, 1.4) / 1.4 * 100;
+  const uphColor = m.uph >= (m.target||220) ? C.green : (m.uph >= (m.target||220) * 0.8 ? C.blue : C.red);
+  const rateColor = m.rate >= 1 ? C.green : (m.rate >= 0.8 ? C.blue : C.red);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${i+1}</td>
+    <td class="l" style="font-weight:600;color:${C.navy};">${m.name}</td>
+    
+    <td class="l" style="font-size:11px;color:${C.muted};">${m.batch}</td>
+    <td>${Number(m.qty).toLocaleString()}</td>
+    <td>${Number(m.hrs).toFixed(2)}</td>
+    <td><div class="pbar"><div class="track"><div class="fill" style="width:${uphPct}%;background:${uphColor}"></div></div><span class="num" style="color:${uphColor}">${Number(m.uph).toFixed(1)}</span></div></td>
+    <td><div class="pbar"><div class="track"><div class="fill" style="width:${ratePct}%;background:${rateColor}"></div></div><span class="num" style="color:${rateColor}">${(m.rate*100).toFixed(0)}%</span></div></td>`;
+  modelTb.appendChild(tr);
+});
+// totals
+let mTQ = MODELS.reduce((s,m)=>s+m.qty,0), mTH = MODELS.reduce((s,m)=>s+Number(m.hrs),0);
+document.getElementById('modelTotalQty').textContent = mTQ.toLocaleString();
+document.getElementById('modelTotalHours').textContent = mTH.toFixed(2);
+document.getElementById('modelTotalUPH').textContent = (mTH ? (mTQ/mTH).toFixed(1) : '0');
+
+
+/* ---------- 作业员排行 ---------- */
+const rankList = document.getElementById('rankList');
+const rankMax = Math.max(...RANK.map(r => r.q));
+RANK.forEach((r, i) => {
+  const w = (r.q / rankMax * 100).toFixed(1);
+  const uphColor = r.u >= 220 ? C.green : (r.u >= 180 ? C.blue : C.amber);
+  const div = document.createElement('div');
+  div.className = `rank-row ${i < 3 ? 'r' + (i + 1) : ''}`;
+  div.innerHTML = `<div class="rk">${i + 1}</div>
+    <div class="name">${r.n}</div>
+    <div class="bar-cell"><div class="track"><div class="fill" style="width:${w}%"></div></div><span class="v">${Number(r.q).toLocaleString()}</span></div>
+    <div class="v">${Number(r.h).toFixed(2)}</div>
+    <div class="uph" style="color:${uphColor}">${Number(r.u).toFixed(1)}</div>`;
+  rankList.appendChild(div);
+});
+
+
+/* ---------- 物料良率 ---------- */
+const yieldList = document.getElementById('yieldList');
+YIELDS.forEach((y, i) => {
+  const pct = (y.rate * 100).toFixed(2);
+  const p = y.rate * 100;
+  const warn = p < 90;
+  const barColor = warn ? C.red : (p >= 99 ? C.green : (p >= 97 ? C.mid : '#e0a020'));
+  const txtColor = warn ? C.red : (p >= 99 ? C.green : (p >= 97 ? C.mid : C.amber));
+  const barW = p < 80 ? Math.max(5, p.toFixed(1)) : Math.max(2, ((y.rate - 0.8) / 0.2 * 100).toFixed(1));
+  const div = document.createElement('div');
+  div.className = 'yield-row';
+  div.innerHTML = `<div class="idx">${i + 1}</div>
+    <div class="mat ${warn ? 'warn' : ''}">${y.mat}</div>
+    <div class="inp">${Number(y.inp).toLocaleString()}</div>
+    <div class="ybar"><div class="track"><div class="fill" style="width:${barW}%;background:${barColor}"></div></div></div>
+    <div class="ypct" style="color:${txtColor}">${pct}%</div>`;
+  yieldList.appendChild(div);
+});
+
+/* 低良率预警 */
+const ab = document.getElementById('alertBox');
+if (ab) {
+  const warnMats = YIELDS.filter(y => y.rate > 0 && y.rate < 0.90 && y.warn !== false).sort((a, b) => a.rate - b.rate);
+  if (warnMats.length) {
+    const ml = warnMats.map(y => `<b>${y.mat}</b>${(y.rate*100).toFixed(2)}%（不良: 来料${y.bad_in||0}/人为${y.bad_op||0}/机器${y.bad_mac||0}）`).join('；');
+    ab.innerHTML = `<div class="alert"><span class="ico">⚠</span><span>低良率物料预警：${ml}。</span></div>`;
+  }
+}
+
+</script></body></html>
