@@ -150,11 +150,6 @@ table.dt .amber{color:var(--amber);font-weight:700;}
 .yield-row .cy.op{color:#c07a1e;}
 .yield-row .cy.mac{color:#7a5be0;}
 .yield-row .cy.hot{color:var(--red);font-weight:700;}
-/* 物料批号分析入口（仅月报定义 YIELD_LINK_TPL 时启用，周报不受影响） */
-.card-head .yield-link{margin-left:10px;background:var(--blue);color:#fff;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:600;text-decoration:none;white-space:nowrap;}
-.card-head .yield-link:hover{background:var(--navy);}
-.yield-row .mat-link{color:var(--blue);text-decoration:none;font-size:11px;margin-left:5px;opacity:.5;}
-.yield-row:hover .mat-link{opacity:1;}
 
 /* 警示条 */
 .alert{background:#fde8ea;border-left:4px solid var(--red);border-radius:8px;padding:10px 14px;font-size:12px;color:#7a1a22;display:flex;align-items:center;gap:8px;margin-top:12px;}
@@ -219,7 +214,7 @@ table.dt .amber{color:var(--amber);font-weight:700;}
   <div class="eyebrow">MONTHLY PRODUCTION DASHBOARD</div>
   <h1>2026年10月 · 生产月报仪表盘</h1>
   <div class="meta">
-    <div class="item"><span class="k">统计周期</span><span class="v">2026年10月（24个工作日）</span></div><div class="sep"></div><div class="item"><span class="k">车间</span><span class="v">净化车间</span></div><div class="sep"></div><div class="item"><span class="k">工序</span><span class="v">组装</span></div><div class="sep"></div><div class="item"><span class="k">型号数</span><span class="v">13</span></div><div class="sep"></div><div class="item"><span class="k">批号数</span><span class="v">22</span></div><div class="sep"></div><div class="item"><span class="k">作业员</span><span class="v">50人</span></div><div class="sep"></div><div class="item"><span class="k">生成日期</span><span class="v">2026-11-12</span></div>
+    <div class="item"><span class="k">统计周期</span><span class="v">2026年10月（24个工作日）</span></div><div class="sep"></div><div class="item"><span class="k">车间</span><span class="v">净化车间</span></div><div class="sep"></div><div class="item"><span class="k">工序</span><span class="v">组装</span></div><div class="sep"></div><div class="item"><span class="k">型号数</span><span class="v">13</span></div><div class="sep"></div><div class="item"><span class="k">批号数</span><span class="v">22</span></div><div class="sep"></div><div class="item"><span class="k">作业员</span><span class="v">50人</span></div><div class="sep"></div><div class="item"><span class="k">生成日期</span><span class="v">2026-11-13</span></div>
   </div>
   <div class="stamp">
     <div class="big">10月</div>
@@ -345,7 +340,7 @@ table.dt .amber{color:var(--amber);font-weight:700;}
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><span class="bar"></span><h3>三、物料良率汇总</h3><span class="sub">9 类物料 · 三类分类良率</span><a class="yield-link" href="物料分析_2026年10月.html" title="物料批号追溯 · 责任归因 · 备注现象分析">物料分析 →</a></div>
+      <div class="card-head"><span class="bar"></span><h3>三、物料良率汇总</h3><span class="sub">9 类物料 · 三类分类良率</span></div>
       <div class="card-body">
         <div class="yield-row" style="background:#eef3f9;font-size:11px;color:#8a97a8;font-weight:600;">
           <div>#</div><div>物料</div><div style="text-align:right;">投料数</div><div>工序良率</div><div style="text-align:right;">总良率</div>
@@ -362,7 +357,6 @@ table.dt .amber{color:var(--amber);font-weight:700;}
 
 </div>
 <script>
-const YIELD_LINK_TPL = '物料分析_2026年10月.html?mat=';
 const DATA = {
   kpi: [{"label": "累计产量", "unit": "件", "this": 615726, "last": 563569, "wow_pct": 9.3, "dec": 0, "id": "k-output"}, {"label": "累计工时", "unit": "h", "this": 4887.51, "last": 3719.73, "wow_pct": 31.4, "dec": 2, "id": "k-hours"}, {"label": "生产天数", "unit": "天", "this": 24, "last": 23, "wow_pct": 4.3, "dec": 0, "id": "k-days"}, {"label": "综合UPH", "unit": "", "this": 126.0, "last": 151.5, "wow_pct": -16.8, "dec": 1, "id": "k-uph"}, {"label": "日均产量", "unit": "件/天", "this": 25655, "last": 24503, "wow_pct": 4.7, "dec": 0, "id": "k-davg"}, {"label": "日均工时", "unit": "h/天", "this": 203.65, "last": 161.73, "wow_pct": 25.9, "dec": 2, "id": "k-havg"}],
   weeks: {"labels": ["W40", "W41", "W42", "W43", "W44"], "ranges": ["10/1-10/4", "10/5-10/11", "10/12-10/18", "10/19-10/25", "10/26-10/31"], "days": [0, 6, 6, 6, 6], "output": [0, 168929, 178016, 152596, 116185], "hours": [0, 1392.43, 1404.41, 1021.15, 1069.52], "uph": [0, 121.3, 126.8, 149.4, 108.6], "bigLine": [0, 23046, 11205, 10845, 0], "smallLine": [0, 145883, 166811, 141751, 116185], "davg": [0, 28155, 29669, 25433, 19364]},
@@ -585,13 +579,10 @@ YIELDS.forEach((y, i) => {
     const cp = (r * 100).toFixed(2);
     return `<div class="cy ${c.k}${hot ? ' hot' : ''}" title="${c.label}不良 ${c.n} 个 / 投料 ${inp.toLocaleString()} → 分类良率 ${cp}%">${cp}%<small>${c.n}</small></div>`;
   }).join('');
-  /* 月报可定义 YIELD_LINK_TPL，为每个物料名追加「物料分析」直达链接；周报未定义则不加 */
-  const linkHtml = (typeof YIELD_LINK_TPL !== 'undefined' && YIELD_LINK_TPL)
-    ? ` <a class="mat-link" href="${YIELD_LINK_TPL}${encodeURIComponent(y.mat)}" title="查看该物料的批号追溯分析">↗</a>` : '';
   const div = document.createElement('div');
   div.className = 'yield-row';
   div.innerHTML = `<div class="idx">${i + 1}</div>
-    <div class="mat ${warn ? 'warn' : ''}">${y.mat}${linkHtml}</div>
+    <div class="mat ${warn ? 'warn' : ''}">${y.mat}</div>
     <div class="inp">${Number(y.inp).toLocaleString()}</div>
     <div class="ybar"><div class="track"><div class="fill" style="width:${barW}%;background:${barColor}"></div></div></div>
     <div class="ypct" style="color:${txtColor}">${pct}%</div>${cyHtml}`;
